@@ -1,7 +1,8 @@
 from typing import List, Tuple, Dict, Set
 
-"""Implementação de autômatos finitos."""
-
+"""
+Implementação de autômatos finitos.
+"""
 
 def load_automata(filename: str) -> Tuple[Set[str], Set[str], Dict[str, Dict[str, List[str]]], str, Set[str]]:
     """
@@ -33,7 +34,6 @@ def load_automata(filename: str) -> Tuple[Set[str], Set[str], Dict[str, Dict[str
     ```
 
     Caso o arquivo seja inválido uma exceção Exception é gerada.
-
     """
     with open(filename, 'r') as f:
         lines = f.read().splitlines()
@@ -61,7 +61,7 @@ def load_automata(filename: str) -> Tuple[Set[str], Set[str], Dict[str, Dict[str
 
 def process(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[str]]], str, Set[str]], word: List[str]) -> str:
     """Processa uma palavra no autômato e retorna o resultado: ACEITA, REJEITA ou INVÁLIDA."""
-    states, alphabet, transitions, initial_state, final_states = automata
+    _, alphabet, transitions, initial_state, final_states = automata
 
     def process_state(state: str, word: List[str]) -> str:
         if not word:
@@ -127,4 +127,10 @@ def convert_to_dfa(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[
         state_name = str(state)
         dfa_transitions[state_name] = {symbol: str(dest) for symbol, dest in transitions.items()}
 
-    return set(dfa_transitions.keys()), alphabet - {'&'}, dfa_transitions, str(dfa_initial_state), {str(s) for s in dfa_final_states}
+    return (
+        set(dfa_transitions.keys()),
+        alphabet - {'&'},
+        dfa_transitions,
+        str(dfa_initial_state),
+        {str(s) for s in dfa_final_states},
+    )
