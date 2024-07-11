@@ -1,13 +1,13 @@
-from typing import List, Tuple, Dict
+from typing import List, Tuple, Dict, Set
 
 """Implementação de autômatos finitos."""
 
 
-def load_automata(filename):
+def load_automata(filename: str) -> Tuple[Set[str], Set[str], Dict[str, Dict[str, List[str]]], str, Set[str]]:
     """
     Lê os dados de um autômato finito a partir de um arquivo.
 
-    A estsrutura do arquivo deve ser:
+    A estrutura do arquivo deve ser:
 
     <lista de símbolos do alfabeto, separados por espaço (' ')>
     <lista de nomes de estados>
@@ -35,16 +35,15 @@ def load_automata(filename):
     Caso o arquivo seja inválido uma exceção Exception é gerada.
 
     """
-
     with open(filename, 'r') as f:
         lines = f.read().splitlines()
-    
+
     alphabet = set(lines[0].split())
     states = set(lines[1].split())
     final_states = set(lines[2].split())
     initial_state = lines[3]
     transitions = {}
-    
+
     for line in lines[4:]:
         if line.strip():
             parts = line.split()
@@ -56,39 +55,39 @@ def load_automata(filename):
             if symbol not in transitions[state]:
                 transitions[state][symbol] = []
             transitions[state][symbol].append(next_state)
-    
+
     return states, alphabet, transitions, initial_state, final_states
 
 
-def process(automata: Tuple[set, set, Dict[str, Dict[str, List[str]]], str, set], word: List[str]) -> Dict[str, str]:
+def process(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[str]]], str, Set[str]], word: List[str]) -> str:
+    """Processa uma palavra no autômato e retorna o resultado: ACEITA, REJEITA ou INVÁLIDA."""
     states, alphabet, transitions, initial_state, final_states = automata
-    
+
     def process_state(state: str, word: List[str]) -> str:
         if not word:
-            if state in final_states:
-                return "ACEITA"
-            else:
-                return "REJEITA"
-        
+            return "ACEITA" if state in final_states else "REJEITA"
+
         symbol = word[0]
         if symbol not in alphabet:
             return "INVÁLIDA"
-        
+
         next_states = transitions.get(state, {}).get(symbol, [])
         for next_state in next_states:
             result = process_state(next_state, word[1:])
             if result == "ACEITA":
                 return result
         return "REJEITA"
-    
+
     return process_state(initial_state, word)
 
-def convert_to_dfa(automata: Tuple[set, set, Dict[str, Dict[str, List[str]]], str, set]) -> Tuple[set, set, Dict[str, Dict[str, str]], str, set]:
+
+def convert_to_dfa(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[str]]], str, Set[str]]) -> Tuple[Set[str], Set[str], Dict[str, Dict[str, str]], str, Set[str]]:
+    """Converte um NFA em um DFA."""
     states, alphabet, transitions, initial_state, final_states = automata
-    
-    def epsilon_closure(state):
-        closure = {state}
-        stack = [state]
+
+    def epsilon_closure(states: Set[str]) -> Set[str]:
+        closure = set(states)
+        stack = list(states)
         while stack:
             current = stack.pop()
             for next_state in transitions.get(current, {}).get('&', []):
@@ -97,19 +96,19 @@ def convert_to_dfa(automata: Tuple[set, set, Dict[str, Dict[str, List[str]]], st
                     stack.append(next_state)
         return closure
 
-    def move(states, symbol):
+    def move(states: Set[str], symbol: str) -> Set[str]:
         new_states = set()
         for state in states:
             new_states.update(transitions.get(state, {}).get(symbol, []))
         return new_states
 
     dfa_states = {}
-    dfa_initial_state = frozenset(epsilon_closure(initial_state))
+    dfa_initial_state = frozenset(epsilon_closure({initial_state}))
     dfa_states[dfa_initial_state] = {}
 
     unmarked_states = [dfa_initial_state]
     dfa_final_states = set()
-    
+
     while unmarked_states:
         current_state = unmarked_states.pop()
         if current_state & final_states:
