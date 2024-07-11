@@ -82,8 +82,8 @@ def process(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[str]]],
 
 
 def convert_to_dfa(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[str]]], str, Set[str]]) -> Tuple[Set[str], Set[str], Dict[str, Dict[str, str]], str, Set[str]]:
-    """Converte um NFA em um DFA."""
-    states, alphabet, transitions, initial_state, final_states = automata
+    """Convert a NFA to a DFA."""
+    _, alphabet, transitions, initial_state, final_states = automata
 
     def epsilon_closure(states: Set[str]) -> Set[str]:
         closure = set(states)
@@ -123,9 +123,9 @@ def convert_to_dfa(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[
             dfa_states[current_state][symbol] = new_state
 
     dfa_transitions = {}
-    for state, transitions in dfa_states.items():
+    for state, trans in dfa_states.items():
         state_name = str(state)
-        dfa_transitions[state_name] = {symbol: str(dest) for symbol, dest in transitions.items()}
+        dfa_transitions[state_name] = {symbol: str(dest) for symbol, dest in trans.items()}
 
     return (
         set(dfa_transitions.keys()),
@@ -134,3 +134,4 @@ def convert_to_dfa(automata: Tuple[Set[str], Set[str], Dict[str, Dict[str, List[
         str(dfa_initial_state),
         {str(s) for s in dfa_final_states},
     )
+
